@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DSA Mini Project - C++ Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+        pre {
+            background: #222;
+            color: #0f0;
+            padding: 20px;
+            white-space: pre-wrap;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h1>DSA Mini Project - Disaster Relief Resource Allocation System</h1>
+<p>This page displays the complete C++ source code of the DSA Mini Project.</p>
+
+<h2>Source Code</h2>
+
+<pre>
+#include <iostream>
+#include <queue>
+#include <vector>
+#include <unordered_map>
+#include <climits>
+using namespace std;
+
+// Structure for disaster area 
+struct Area {
+    string name;
+    int urgency; // Higher = more urgent
+    int suppliesNeeded;
+};
+
+// Compare function for priority queue (max-heap)
+struct CompareUrgency {
+    bool operator()(Area const& a, Area const& b) {
+        return a.urgency < b.urgency; // higher urgency first
+    }
+};
+
+// Graph for route simulation
+class Graph {
+public:
+    unordered_map<string, vector<pair<string, int>>> adj;
+
+    void addEdge(string u, string v, int w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    void shortestPath(string src) {
+        unordered_map<string, int> dist;
+        for (auto& node : adj)
+            dist[node.first] = INT_MAX;
+
+        dist[src] = 0;
+        priority_queue<pair<int, string>, vector<pair<int, string>>, greater<pair<int, string>>> pq;
+        pq.push({0, src});
+
+        while (!pq.empty()) {
+            auto [d, node] = pq.top();
+            pq.pop();
+
+            for (auto& nbr : adj[node]) {
+                string next = nbr.first;
+                int edgeWeight = nbr.second;
+
+                if (d + edgeWeight < dist[next]) {
+                    dist[next] = d + edgeWeight;
+                    pq.push({dist[next], next});
+                }
+            }
+        }
+
+        cout << "\nShortest distances from " << src << ":\n";
+        for (auto& node : dist)
+            cout << " - " << node.first << ": " << dist[node.first] << " km\n";
+    }
+};
+
+int main() {
+    cout << "DISASTER RELIEF RESOURCE ALLOCATION SYSTEM \n";
+
+    priority_queue<Area, vector<Area>, CompareUrgency> pq;
+    int n;
+
+    cout << "\nEnter number of disaster-affected areas: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        Area a;
+        cout << "\nEnter name of area " << i + 1 << ": ";
+        cin >> a.name;
+        cout << "Enter urgency level (1–10): ";
+        cin >> a.urgency;
+        cout << "Enter supplies needed: ";
+        cin >> a.suppliesNeeded;
+        pq.push(a);
+    }
+
+    cout << "\nAreas sorted by urgency:\n";
+    priority_queue<Area, vector<Area>, CompareUrgency> temp = pq;
+    while (!temp.empty()) {
+        Area top = temp.top();
+        temp.pop();
+        cout << " - " << top.name << " | Urgency: " << top.urgency
+             << " | Supplies Needed: " << top.suppliesNeeded << endl;
+    }
+
+    Graph g;
+    int routes;
+    cout << "\nEnter number of routes between locations: ";
+    cin >> routes;
+
+    cout << "\nEnter routes in format: <Location1> <Location2> <Distance>\n";
+    for (int i = 0; i < routes; i++) {
+        string u, v;
+        int w;
+        cout << "Route " << i + 1 << ": ";
+        cin >> u >> v >> w;
+        g.addEdge(u, v, w);
+    }
+
+    string source;
+    cout << "\nEnter the source location (e.g., Warehouse): ";
+    cin >> source;
+
+    g.shortestPath(source);
+
+    cout << "\nRelief allocation sequence:\n";
+    queue<string> deliveryQueue; // NEW queue added here
+
+    while (!pq.empty()) {
+        Area a = pq.top();
+        pq.pop();
+
+        cout << " -> Sending supplies to " << a.name
+             << " (Urgency: " << a.urgency << ", Supplies: " << a.suppliesNeeded << ")\n";
+
+        // Add area to delivery queue
+        deliveryQueue.push(a.name);
+    }
+
+    cout << "\nDispatch simulation :\n";
+    while (!deliveryQueue.empty()) {
+        cout << " Dispatching vehicle to " << deliveryQueue.front() << "...\n";
+        deliveryQueue.pop();
+    }
+
+    cout << "\nMission accomplished\n";
+    return 0;
+}
+</pre>
+
+</body>
+</html>
